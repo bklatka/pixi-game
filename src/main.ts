@@ -22,24 +22,10 @@ import { KeyboardController } from "./KeyboardController.ts";
 
     const player = new Player(app);
     player.add();
-    player.setupControls(keyboard);
+
 
     app.ticker.add(() => {
-        if (keyboard.isKeyPressed("W")) {
-            player.setVector("y", -1);
-        } else if (keyboard.isKeyPressed("S")) {
-            player.setVector("y", 1);
-        } else {
-            player.setVector("y", 0);
-        }
-
-        if (keyboard.isKeyPressed("D")) {
-            player.setVector("x", 1);
-        } else if (keyboard.isKeyPressed("A")) {
-            player.setVector("x", -1);
-        } else {
-            player.setVector("x", 0)
-        }
+        player.setupControls(keyboard);
     })
 
 

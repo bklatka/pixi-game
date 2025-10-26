@@ -1,11 +1,12 @@
 import { type Application, Assets, Sprite, Ticker } from "pixi.js";
 import idlePlayer from "./assets/idle.png";
 import type { KeyboardController } from "../../KeyboardController.ts";
+import clamp from "lodash/clamp";
 
 export class Player {
     private player: Sprite;
 
-    private speed: number = 0.2;
+    private speed: number = 0.6;
 
     private vector = {
         x: 0,
@@ -49,7 +50,21 @@ export class Player {
     }
 
     public setupControls(keyboard: KeyboardController) {
+        if (keyboard.isKeyPressed("W")) {
+            this.setVector("y", -1);
+        } else if (keyboard.isKeyPressed("S")) {
+            this.setVector("y", 1);
+        } else {
+            this.setVector("y", 0);
+        }
 
+        if (keyboard.isKeyPressed("D")) {
+            this.setVector("x", 1);
+        } else if (keyboard.isKeyPressed("A")) {
+            this.setVector("x", -1);
+        } else {
+            this.setVector("x", 0)
+        }
 
     }
 
@@ -57,6 +72,12 @@ export class Player {
         const deltaTime = ticker.deltaMS;
         this.player.x += this.vector.x * this.speed * deltaTime;
         this.player.y += this.vector.y * this.speed * deltaTime;
+
+        const padding = 20;
+        this.player.x = clamp(this.player.x, padding, this.app.screen.width - padding);
+        this.player.y = clamp(this.player.y, padding, this.app.screen.height - padding);
+
+
     }
 
     public async dispose() {
