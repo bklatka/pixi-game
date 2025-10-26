@@ -1,4 +1,4 @@
-import { type Application, Assets, Sprite, Ticker } from "pixi.js";
+import { type Application, Assets, Graphics, Sprite, Ticker } from "pixi.js";
 import idlePlayer from "./assets/idle.png";
 import type { KeyboardController } from "../../KeyboardController.ts";
 import clamp from "lodash/clamp";
@@ -24,11 +24,35 @@ export class Player {
 
     public constructor(private app: Application) {
         this.player = Sprite.from("player-idle");
+        this.player.scale.set(2, 2);
+        this.drawGun();
 
         app.ticker.add((ticker) => {
             this.ticker = ticker
             this.render(ticker);
         })
+    }
+
+    public aim() {
+        const { x: x1, y: y1 } = this.player;
+        const { x: x2, y: y2 } = this.app.renderer.events.pointer.global;
+
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        this.player.rotation = Math.atan2(dy, dx);
+    }
+
+    private drawGun() {
+        const rect = new Graphics();
+
+
+        rect.rect(0, 0, 30, 10);
+        rect.fill(0xff0000);
+
+        rect.pivot.set(0, 5);
+
+        this.player.addChild(rect);
     }
 
     public add() {
@@ -47,6 +71,7 @@ export class Player {
 
     public render(ticker: Ticker) {
         this.move(ticker);
+        this.aim();
     }
 
     public setupControls(keyboard: KeyboardController) {
@@ -76,8 +101,6 @@ export class Player {
         const padding = 20;
         this.player.x = clamp(this.player.x, padding, this.app.screen.width - padding);
         this.player.y = clamp(this.player.y, padding, this.app.screen.height - padding);
-
-
     }
 
     public async dispose() {

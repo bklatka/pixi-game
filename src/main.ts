@@ -14,6 +14,7 @@ import { KeyboardController } from "./KeyboardController.ts";
     }
     const app = new Application();
 
+    globalThis.__PIXI_APP__ = app;
     await Player.preload();
     await app.init({ background: "#42f1ff", resizeTo: window });
 
