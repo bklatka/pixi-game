@@ -1,4 +1,4 @@
-import { type Application, Assets, FederatedPointerEvent, Sprite, Ticker } from "pixi.js";
+import { type Application, Assets, Sprite, Ticker } from "pixi.js";
 import idlePlayer from "./assets/idle.png";
 import type { KeyboardController } from "../../KeyboardController.ts";
 
@@ -41,7 +41,7 @@ export class Player {
     }
 
     public setVector(dimension: "x" | "y", addValue: number) {
-        this.vector[dimension] += addValue;
+        this.vector[dimension] = addValue;
     }
 
     public render(ticker: Ticker) {
@@ -49,14 +49,12 @@ export class Player {
     }
 
     public setupControls(keyboard: KeyboardController) {
-        keyboard.addBinding("W", () => this.setVector("y", -1));
-        keyboard.addBinding("A", () => this.setVector("x", -1));
-        keyboard.addBinding("S", () => this.setVector("y", 1));
-        keyboard.addBinding("D", () => this.setVector("x", 1));
+
+
     }
 
     private move(ticker: Ticker) {
-        const deltaTime = 1
+        const deltaTime = ticker.deltaMS;
         this.player.x += this.vector.x * this.speed * deltaTime;
         this.player.y += this.vector.y * this.speed * deltaTime;
     }

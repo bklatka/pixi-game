@@ -3,30 +3,17 @@ import { Application, type Ticker } from "pixi.js";
 export class KeyboardController {
     private pressedKey: Set<string> = new Set();
 
-    private listeners: ((e: KeyboardEvent) => void)[] = [];
+    private upListener;
+    private downListener;
 
-    private bindings: Binding[] = [];
+    public bindings: Binding[] = [];
 
     private ticker?: Ticker;
     public constructor(private app: Application) {
-        const downListener = this.onKeyDown.bind(this);
-        const upListener = this.onKeyUp.bind(this);
-        window.addEventListener('keydown', downListener);
-        window.addEventListener('keyup', upListener);
-
-        this.listeners.push(downListener, upListener)
-
-        this.app.ticker.add(ticker => {
-            this.ticker = ticker;
-
-            this.bindings.forEach(binder => {
-                if (this.pressedKey.has(binder.keyName)) {
-                    binder.callback();
-                }
-            })
-
-
-        })
+        this.downListener = this.onKeyDown.bind(this);
+        this.upListener = this.onKeyUp.bind(this);
+        window.addEventListener('keydown', this.downListener);
+        window.addEventListener('keyup', this.upListener);
     }
 
     public onKeyDown(e: KeyboardEvent) {
@@ -39,20 +26,20 @@ export class KeyboardController {
         this.pressedKey.delete(e.key.toLocaleLowerCase());
     }
 
-    public addBinding(key: string, callback: () => void) {
-        this.bindings.push({
-            keyName: key.toLocaleLowerCase(),
-            callback: callback,
-        })
+    public isKeyPressed(keyName: string): boolean {
+        return this.pressedKey.has(keyName.toLocaleLowerCase());
+    }
+
+    public registerBinding(callback: (pressed: Set<string>) => void) {
+        this.bindings.push(callback)
     }
 
     public async dispose() {
         this.ticker?.destroy();
+
+        window.removeEventListener('keydown', this.downListener);
+        window.removeEventListener('keyup', this.upListener);
     }
 }
 
-interface Binding {
-    keyName: string;
-    onDown: () => void;
-    onUp: () => void;
-}
+type Binding = (pressed: Set<string>) => void;
