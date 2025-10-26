@@ -2,6 +2,8 @@
 
 import { Application } from "pixi.js";
 import "./main.css";
+import { Player } from "./models/player/Player.ts";
+import { KeyboardController } from "./KeyboardController.ts";
 
 
 (async () => {
@@ -12,7 +14,16 @@ import "./main.css";
     }
     const app = new Application();
 
-    await app.init({ background: "blue", resizeTo: window });
+    await Player.preload();
+    await app.init({ background: "#42f1ff", resizeTo: window });
+
+    const keyboard = new KeyboardController(app);
+
+
+    const player = new Player(app);
+    player.add();
+    player.setupControls(keyboard);
 
     domApp.appendChild(app.canvas);
 })();
+
