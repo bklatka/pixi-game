@@ -16,7 +16,7 @@ import { KeyboardController } from "./KeyboardController.ts";
 
     globalThis.__PIXI_APP__ = app;
     await Player.preload();
-    await app.init({ background: "#42f1ff", resizeTo: window });
+    await app.init({ background: "#f3cead", resizeTo: window });
 
     const keyboard = new KeyboardController(app);
 
@@ -24,6 +24,14 @@ import { KeyboardController } from "./KeyboardController.ts";
     const player = new Player(app);
     player.add();
 
+
+    app.stage.eventMode = "static";
+    app.stage.hitArea = app.screen;
+
+
+    app.stage.addListener("pointerdown", () => {
+        player.mainAction();
+    })
 
     app.ticker.add(() => {
         player.setupControls(keyboard);

@@ -1,10 +1,13 @@
-import { type Application, Assets, Graphics, Sprite, Ticker } from "pixi.js";
+import { type Application, Assets, Sprite, Ticker } from "pixi.js";
 import idlePlayer from "./assets/idle.png";
 import type { KeyboardController } from "../../KeyboardController.ts";
 import clamp from "lodash/clamp";
+import { Gun } from "./guns/Gun.ts";
+import { Pistol } from "./guns/Pistol.ts";
 
 export class Player {
     private player: Sprite;
+    private mainHand: Gun;
 
     private speed: number = 0.6;
 
@@ -25,7 +28,10 @@ export class Player {
     public constructor(private app: Application) {
         this.player = Sprite.from("player-idle");
         this.player.scale.set(2, 2);
-        this.drawGun();
+
+        this.mainHand = new Pistol();
+        this.mainHand.draw();
+        this.player.addChild(this.mainHand.model);
 
         app.ticker.add((ticker) => {
             this.ticker = ticker
@@ -40,19 +46,13 @@ export class Player {
 
         const dx = x2 - x1;
         const dy = y2 - y1;
-        this.player.rotation = Math.atan2(dy, dx);
+        this.mainHand.aim(Math.atan2(dy, dx));
     }
 
-    private drawGun() {
-        const rect = new Graphics();
-
-
-        rect.rect(0, 0, 30, 10);
-        rect.fill(0xff0000);
-
-        rect.pivot.set(0, 5);
-
-        this.player.addChild(rect);
+    public mainAction() {
+        if (this.mainHand && this.mainHand instanceof Gun) {
+            this.mainHand.shoot();
+        }
     }
 
     public add() {
@@ -91,6 +91,12 @@ export class Player {
             this.setVector("x", 0)
         }
 
+        if (keyboard.isKeyPressed("R")) {
+            if (this.mainHand && this.mainHand instanceof Gun) {
+                this.mainHand.reload()
+            }
+
+        }
     }
 
     private move(ticker: Ticker) {
@@ -107,3 +113,4 @@ export class Player {
         this.ticker?.destroy();
     }
 }
+
