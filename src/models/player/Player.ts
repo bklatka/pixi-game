@@ -1,22 +1,24 @@
-import { type Application, Assets, Sprite, Ticker } from "pixi.js";
+import { Assets, Sprite, Ticker } from "pixi.js";
 import idlePlayer from "./assets/idle.png";
 import type { KeyboardController } from "../../KeyboardController.ts";
 import clamp from "lodash/clamp";
 import { Gun } from "./guns/Gun.ts";
 import { Pistol } from "./guns/Pistol.ts";
+import type { Game } from "../../Game.ts";
 
 export class Player {
-    private player: Sprite;
-    private mainHand: Gun;
+    public mainHand: Gun;
+    public readonly model: Sprite;
 
-    private speed: number = 0.6;
+    private speed: number = 0.2;
 
     private vector = {
         x: 0,
         y: 0,
     }
 
-    private ticker?: Ticker;
+    private renderer;
+    private keyboardHandler;
 
     public static async preload() {
         await Assets.load({
@@ -25,23 +27,24 @@ export class Player {
         });
     }
 
-    public constructor(private app: Application) {
-        this.player = Sprite.from("player-idle");
-        this.player.scale.set(2, 2);
+    public constructor(private game: Game) {
+        this.model = Sprite.from("player-idle");
+        this.model.label = "Player";
+        this.model.scale.set(2, 2);
 
-        this.mainHand = new Pistol();
+        this.mainHand = new Pistol(game);
         this.mainHand.draw();
-        this.player.addChild(this.mainHand.model);
+        this.model.addChild(this.mainHand.model);
 
-        app.ticker.add((ticker) => {
-            this.ticker = ticker
-            this.render(ticker);
-        })
+        this.renderer = this.render.bind(this);
+        this.keyboardHandler = this.setupControls.bind(this, this.game.keyboard);
+        game.app.ticker.add(this.renderer);
+        game.app.ticker.add(this.keyboardHandler);
     }
 
     public aim() {
-        const { x: x1, y: y1 } = this.player;
-        const { x: x2, y: y2 } = this.app.renderer.events.pointer.global;
+        const { x: x1, y: y1 } = this.model;
+        const { x: x2, y: y2 } = this.game.app.renderer.events.pointer.global;
 
 
         const dx = x2 - x1;
@@ -56,13 +59,13 @@ export class Player {
     }
 
     public add() {
-        this.app.stage.addChild(this.player);
+        this.game.app.stage.addChild(this.model);
 
 
-        this.player.anchor.set(0.5, 0.5)
-        this.player.x = this.app.screen.width / 2;
-        this.player.y = this.app.screen.height / 2;
-        this.player.scale = 1;
+        this.model.anchor.set(0.5, 0.5)
+        this.model.x = this.game.app.screen.width / 2;
+        this.model.y = this.game.app.screen.height / 2;
+        this.model.scale = 1;
     }
 
     public setVector(dimension: "x" | "y", addValue: number) {
@@ -74,7 +77,7 @@ export class Player {
         this.aim();
     }
 
-    public setupControls(keyboard: KeyboardController) {
+    private setupControls(keyboard: KeyboardController) {
         if (keyboard.isKeyPressed("W")) {
             this.setVector("y", -1);
         } else if (keyboard.isKeyPressed("S")) {
@@ -101,16 +104,17 @@ export class Player {
 
     private move(ticker: Ticker) {
         const deltaTime = ticker.deltaMS;
-        this.player.x += this.vector.x * this.speed * deltaTime;
-        this.player.y += this.vector.y * this.speed * deltaTime;
+        this.model.x += this.vector.x * this.speed * deltaTime;
+        this.model.y += this.vector.y * this.speed * deltaTime;
 
         const padding = 20;
-        this.player.x = clamp(this.player.x, padding, this.app.screen.width - padding);
-        this.player.y = clamp(this.player.y, padding, this.app.screen.height - padding);
+        this.model.x = clamp(this.model.x, padding, this.game.app.screen.width - padding);
+        this.model.y = clamp(this.model.y, padding, this.game.app.screen.height - padding);
     }
 
     public async dispose() {
-        this.ticker?.destroy();
+        this.game.app.ticker.remove(this.renderer);
+        this.game.app.ticker.remove(this.keyboardHandler);
     }
 }
 

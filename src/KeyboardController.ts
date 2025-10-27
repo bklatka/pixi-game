@@ -1,4 +1,4 @@
-import { Application, type Ticker } from "pixi.js";
+import { type Ticker } from "pixi.js";
 
 export class KeyboardController {
     private pressedKey: Set<string> = new Set();
@@ -9,7 +9,7 @@ export class KeyboardController {
     public bindings: Binding[] = [];
 
     private ticker?: Ticker;
-    public constructor(private app: Application) {
+    public constructor() {
         this.downListener = this.onKeyDown.bind(this);
         this.upListener = this.onKeyUp.bind(this);
         window.addEventListener('keydown', this.downListener);

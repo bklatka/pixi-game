@@ -1,9 +1,11 @@
 import { Gun } from "./Gun.ts";
 import { Graphics } from "pixi.js";
+import type { Game } from "../../../Game.ts";
 
 export class Pistol extends Gun {
 
-    public constructor() {
+    private reloadTimeoutId?: number;
+    public constructor(private game: Game) {
         super();
 
         this.damage = 10;
@@ -16,6 +18,7 @@ export class Pistol extends Gun {
     public override draw() {
         const rect = new Graphics();
         this.model = rect;
+        this.model.label = "Pistol";
 
         rect.rect(0, 0, 30, 10);
         rect.fill(0xff0000);
@@ -34,6 +37,9 @@ export class Pistol extends Gun {
         }
 
         this.magazineLoad--;
+        this.game.bullets.add(this.game.player.model, this.game.player.mainHand.model.rotation);
+
+
         console.log("pif paf")
     }
 
@@ -43,10 +49,16 @@ export class Pistol extends Gun {
         }
         console.log('reloding');
         this.isReloading = true;
-        setTimeout(() => {
+        this.reloadTimeoutId = setTimeout(() => {
             console.log('reloaded');
             this.isReloading = false;
             this.magazineLoad = this.magazineSize
         }, this.reloadTimeInMs);
+    }
+
+    public dispose() {
+        if (this.reloadTimeoutId) {
+            clearTimeout(this.reloadTimeoutId);
+        }
     }
 }
