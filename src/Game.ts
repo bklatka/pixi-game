@@ -2,6 +2,7 @@ import { Application } from "pixi.js";
 import { Bullets } from "./models/player/guns/Bullets.ts";
 import { Player } from "./models/player/Player.ts";
 import { KeyboardController } from "./KeyboardController.ts";
+import { GameUI } from "./UI/GameUI.ts";
 
 
 export class Game {
@@ -10,6 +11,7 @@ export class Game {
     public bullets: Bullets;
     public player: Player;
     public keyboard: KeyboardController;
+    public ui: GameUI;
 
     public constructor() {
         this.app = new Application();
@@ -27,6 +29,7 @@ export class Game {
         this.keyboard = new KeyboardController();
         this.bullets = new Bullets(this);
         this.player = new Player(this);
+        this.ui = new GameUI(this);
 
         this.player.add();
 

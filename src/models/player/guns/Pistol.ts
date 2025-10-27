@@ -1,10 +1,13 @@
 import { Gun } from "./Gun.ts";
-import { Graphics } from "pixi.js";
+import { Graphics, type Ticker } from "pixi.js";
 import type { Game } from "../../../Game.ts";
 
 export class Pistol extends Gun {
 
+    public reloadProgress = 0;
+    private reloadStartTime: null | number = null;
     private reloadTimeoutId?: number;
+    private reloadProgressUpdater;
     public constructor(private game: Game) {
         super();
 
@@ -13,6 +16,10 @@ export class Pistol extends Gun {
         this.magazineSize = 7;
         this.magazineLoad = 7;
         this.reloadTimeInMs = 3000;
+    }
+
+    public getMagazineLoad(): number {
+        return this.magazineLoad;
     }
 
     public override draw() {
@@ -27,33 +34,44 @@ export class Pistol extends Gun {
     }
 
     public override shoot() {
-        if (this.isReloading) {
-            console.log('Still reloading...');
+        if (!this.game.player.mainHand) {
             return;
         }
+
         if (this.magazineLoad === 0) {
-            console.log('no ammo!');
             return;
         }
 
         this.magazineLoad--;
         this.game.bullets.add(this.game.player.model, this.game.player.mainHand.model.rotation);
-
-
-        console.log("pif paf")
     }
 
     public override reload() {
-        if (this.isReloading) {
+        if (this.reloadStartTime !== null) {
             return;
         }
-        console.log('reloding');
+        this.magazineLoad = 0;
         this.isReloading = true;
-        this.reloadTimeoutId = setTimeout(() => {
-            console.log('reloaded');
-            this.isReloading = false;
-            this.magazineLoad = this.magazineSize
-        }, this.reloadTimeInMs);
+        this.reloadProgress = 0;
+        this.reloadStartTime = performance.now();
+
+        this.reloadProgressUpdater = this.updateReloadPRogress.bind(this);
+        this.game.app.ticker.add(this.reloadProgressUpdater);
+    }
+
+    private updateReloadPRogress() {
+        if (this.reloadStartTime == null) return;
+
+        const elapsed = performance.now() - this.reloadStartTime;
+        const progress = Math.min(elapsed / this.reloadTimeInMs, 1);
+        this.reloadProgress = progress;
+
+        // 🔸 Po osiągnięciu 100% usuń callback z tickera
+        if (progress >= 1) {
+            this.reloadStartTime = null;
+            this.magazineLoad = this.magazineSize;
+            this.game.app.ticker.remove(this.reloadProgressUpdater);
+        }
     }
 
     public dispose() {

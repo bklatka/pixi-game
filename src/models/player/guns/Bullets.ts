@@ -23,7 +23,6 @@ export class Bullets {
     public add(initialPos: PointData, angle: number) {
         const bullet = new Graphics().circle(0, 0, 4).fill(0xffff00);
         bullet.position.copyFrom(initialPos);
-        console.log(initialPos)
         bullet.rotation = angle;
         bullet.label = "Bullet";
 
@@ -36,7 +35,6 @@ export class Bullets {
             return;
         }
 
-        console.log('tick')
         const dt = ticker.deltaMS / 1000;
 
         for (let i = 0; i < this.bullets.length; i++) {

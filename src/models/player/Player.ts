@@ -7,7 +7,7 @@ import { Pistol } from "./guns/Pistol.ts";
 import type { Game } from "../../Game.ts";
 
 export class Player {
-    public mainHand: Gun;
+    public mainHand?: Pistol;
     public readonly model: Sprite;
 
     private speed: number = 0.2;
@@ -49,7 +49,7 @@ export class Player {
 
         const dx = x2 - x1;
         const dy = y2 - y1;
-        this.mainHand.aim(Math.atan2(dy, dx));
+        this.mainHand?.aim(Math.atan2(dy, dx));
     }
 
     public mainAction() {
